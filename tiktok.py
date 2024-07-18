@@ -12,12 +12,12 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def format_cookie_file(data, cookie_content):
-    user_id = data.get("user_id", "unknown")
-    nickname = data.get("nickname", "unknown")
-    region = data.get("region", "unknown")
-    verified = "True" if data.get("verified", False) else "False"
+    username = data.get("username", "unknown")
+    full_name = data.get("full_name", "unknown")
+    is_verified = "True" if data.get("is_verified", False) else "False"
+    is_business_account = "True" if data.get("is_business_account", False) else "False"
 
-    header = f"UserID = {user_id}\nNickname = {nickname}\nRegion = {region}\nVerified = {verified}\nChecker By: github.com/yourusername\nTikTok COOKIE :ðŸ‘‡\n\n\n"
+    header = f"USERNAME = {username}\nFULL NAME = {full_name}\nVerified = {is_verified}\nBusiness Account = {is_business_account}\n\n\n"
     return header + cookie_content
 
 def checkNetscapeCookies(num_threads=1):
@@ -38,20 +38,20 @@ def checkNetscapeCookies(num_threads=1):
 
                 session = requests.Session()
                 session.cookies.update(cookies)
-                session.headers.update({'Accept-Encoding': 'identity'})
+                session.headers.update({'Accept-Encoding': 'identity', 'User-Agent': 'TikTok 123.0.0.0 Android'})
 
-                response = session.get("https://www.tiktok.com/api/user/info/")  # Update to TikTok API endpoint
+                response = session.get("https://api.tiktok.com/v1/accounts/current_user/")
 
                 if response.status_code == 200:
-                    data = response.json()
+                    data = response.json().get("user", {})
+                    username = data.get("username", "unknown")
 
                     counts['hits'] += 1
                     print(colorama.Fore.GREEN + f"Login successful with {cookie}" + colorama.Fore.RESET)
 
-                    os.makedirs(os.path.join("hits", "tiktok"), exist_ok=True)
-                    
+                    output_file = os.path.join("hits", "tiktok", f"{username.replace(' ', '_').lower()}.txt")
                     formatted_cookie = format_cookie_file(data, read_cookie)
-                    with open(os.path.join("hits", "tiktok", cookie), 'w', encoding='utf-8') as out_f:
+                    with open(output_file, 'w', encoding='utf-8') as out_f:
                         out_f.write(formatted_cookie)
 
                 else:
@@ -112,20 +112,20 @@ def checkJsonCookies(num_threads=1):
 
                 session = requests.Session()
                 session.cookies.update(cookies)
-                session.headers.update({'Accept-Encoding': 'identity'})
+                session.headers.update({'Accept-Encoding': 'identity', 'User-Agent': 'TikTok 123.0.0.0 Android'})
 
-                response = session.get("https://www.tiktok.com/api/user/info/")  # Update to TikTok API endpoint
+                response = session.get("https://api.tiktok.com/v1/accounts/current_user/")
 
                 if response.status_code == 200:
-                    data = response.json()
+                    data = response.json().get("user", {})
+                    username = data.get("username", "unknown")
 
                     counts['hits'] += 1
                     print(colorama.Fore.GREEN + f"Login successful with {cookie_name}" + colorama.Fore.RESET)
 
-                    os.makedirs(os.path.join("hits", "tiktok"), exist_ok=True)
-                    
+                    output_file = os.path.join("hits", "tiktok", f"{username.replace(' ', '_').lower()}.txt")
                     formatted_cookie = format_cookie_file(data, json.dumps(cookies_json, indent=4))
-                    with open(os.path.join("hits", "tiktok", cookie_name), 'w', encoding='utf-8') as out_f:
+                    with open(output_file, 'w', encoding='utf-8') as out_f:
                         out_f.write(formatted_cookie)
 
                 else:
@@ -168,26 +168,29 @@ def convertJsonToNetscape():
     clear_screen()
 
     def boolToString(s):
-        if s:
-            return "TRUE"
-        else:
-            return "FALSE"
+        return "TRUE" if s else "FALSE"
 
     def checkTailMatch(s):
-        if s[0] == ".":
-            return "TRUE"
-        return "FALSE"
+        return "TRUE" if s.startswith(".") else "FALSE"
 
     cookies = os.listdir('convert')
     for cookie in cookies:
         try:
-            cookie_path = "convert/" + cookie
+            cookie_path = os.path.join("convert", cookie)
 
-            data = json.loads(open(cookie_path, 'r', encoding='utf-8').read())
-            write = open(f'converted/{cookie}', 'w', encoding='utf-8')
+            with open(cookie_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
 
-            for x in data:
-                write.write(x["domain"] + '\t' + checkTailMatch(x["domain"]) + '\t' + x["path"] + '\t' + boolToString(x["secure"]) + '\t' + "0" + '\t' + x["name"] + '\t' + x["value"] + '\n')
+            with open(os.path.join('converted', cookie), 'w', encoding='utf-8') as write:
+                for x in data:
+                    domain = x.get("domain", "")
+                    tailmatch = checkTailMatch(domain)
+                    path = x.get("path", "")
+                    secure = boolToString(x.get("secure", False))
+                    expires = str(x.get("expires", "0"))
+                    name = x.get("name", "")
+                    value = x.get("value", "")
+                    write.write(f"{domain}\t{tailmatch}\t{path}\t{secure}\t{expires}\t{name}\t{value}\n")
         except Exception as e:
             print(f"Error: {e} with {cookie}")
             continue
@@ -207,7 +210,7 @@ def convertNetscapeToJson():
     cookies = os.listdir('convert')
     for cookie in cookies:
         try:
-            cookie_path = "convert/" + cookie
+            cookie_path = os.path.join("convert", cookie)
 
             with open(cookie_path, 'r', encoding='utf-8') as f:
                 cookies_json = []
@@ -217,9 +220,10 @@ def convertNetscapeToJson():
                         parts = line.strip().split('\t')
                         if len(parts) >= 7:
                             domain = parts[0]
-                            tailmatch = parts[1]
+                            tailmatch = stringToBool(parts[1])
                             path = parts[2]
                             secure = stringToBool(parts[3])
+                            expires = int(parts[4]) if parts[4].isdigit() else None
                             name = parts[5]
                             value = parts[6]
 
@@ -228,13 +232,14 @@ def convertNetscapeToJson():
                                 "tailmatch": tailmatch,
                                 "path": path,
                                 "secure": secure,
+                                "expires": expires,
                                 "name": name,
                                 "value": value
                             }
 
                             cookies_json.append(cookie_data)
 
-            with open(f'converted/{cookie}', 'w', encoding='utf-8') as f:
+            with open(os.path.join('converted', cookie), 'w', encoding='utf-8') as f:
                 json.dump(cookies_json, f, indent=4)
 
         except Exception as e:
@@ -246,16 +251,8 @@ def convertNetscapeToJson():
     clear_screen()
     main()
 
-# Similar refactoring should be done for checkJsonCookies, convertJsonToNetscape, and convertNetscapeToJson
-
 def main():
-    print("""
-██████████████████████████████████████████████████████████████████████████████████
-█─▄▄▄▄█▄─▄▄─█─▄▄─█─▄─▄─█▄─▄█▄─▄▄─█▄─█─▄███─▄▄▄─█─█─█▄─▄▄─█─▄▄▄─█▄─█─▄█▄─▄▄─█▄─▄▄▀█
-█▄▄▄▄─██─▄▄▄█─██─███─████─███─▄████▄─▄████─███▀█─▄─██─▄█▀█─███▀██─▄▀███─▄█▀██─▄─▄█
-▀▄▄▄▄▄▀▄▄▄▀▀▀▄▄▄▄▀▀▄▄▄▀▀▄▄▄▀▄▄▄▀▀▀▀▄▄▄▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▄▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀                                           
-            by https://github.com/harshitkamboj                                                                     
-    """)
+    print("""\n\n\n- CHECKER TIKTOK COOKIE -\n\n""")
     print("[1] Check Netscape Cookies")
     print("[2] Check Json Cookies")
     print("[3] Convert Netscape to Json")

@@ -29,7 +29,7 @@ def format_cookie_file(data, cookie_content):
     auto_pay = "True" if data.get("isRecurring", False) else "False"
     trial = "True" if data.get("isTrialUser", False) else "False"
 
-    header = f"PLAN = {plan}\nCOUNTRY = {country}\nAutoPay = {auto_pay}\nTrial = {trial}\nChecker By: github.com/harshitkamboj\nSpotify COOKIE :👇\n\n\n"
+    header = f"PLAN = {plan}\nCOUNTRY = {country}\nAutoPay = {auto_pay}\nTrial = {trial}"
     return header + cookie_content
 
 def checkNetscapeCookies(num_threads=1):
@@ -263,13 +263,7 @@ def convertNetscapeToJson():
     main()
 
 def main():
-    print("""
-██████████████████████████████████████████████████████████████████████████████████
-█─▄▄▄▄█▄─▄▄─█─▄▄─█─▄─▄─█▄─▄█▄─▄▄─█▄─█─▄███─▄▄▄─█─█─█▄─▄▄─█─▄▄▄─█▄─█─▄█▄─▄▄─█▄─▄▄▀█
-█▄▄▄▄─██─▄▄▄█─██─███─████─███─▄████▄─▄████─███▀█─▄─██─▄█▀█─███▀██─▄▀███─▄█▀██─▄─▄█
-▀▄▄▄▄▄▀▄▄▄▀▀▀▄▄▄▄▀▀▄▄▄▀▀▄▄▄▀▄▄▄▀▀▀▀▄▄▄▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▄▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀▄▄▄▄▄▀▄▄▀▄▄▀                                           
-            by https://github.com/harshitkamboj                                                                     
-    """)
+    print("""\n\n\n- CHECKER SPOTIFY COOKIE -\n\n""")
     print("[1] Check Netscape Cookies")
     print("[2] Check Json Cookies")
     print("[3] Convert Netscape to Json")

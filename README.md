@@ -1,4 +1,4 @@
-# 🔥 Cookie Checker | Spotify, Instagram, Tiktok
+# 🔥 Cookie Checker | Spotify, Instagram, Tiktok, Netflix
 ## ⚡ Features
 - Multi-threading support
 - Json + Netscape support
@@ -10,7 +10,7 @@
 ## ⚠️ Steps of Usage
 1. Run `pip install -r requirements.txt` command
 2. Paste Netscape or Json Cookies in /cookies/ folder 
-3. Run `spotify.py` | `instagram.py` | `tiktok.py` depends on the intended use
+3. Run `spotify.py` | `instagram.py` | `tiktok.py` | `netflix.py` depends on the intended use
 4. Choose checking option
 5. Enter number of threads between 1-100
 ## ⚠️ Suggest Threads

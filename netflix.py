@@ -1,7 +1,6 @@
 import requests
 import os
 import colorama
-import shutil
 import keyboard
 import json
 import threading
